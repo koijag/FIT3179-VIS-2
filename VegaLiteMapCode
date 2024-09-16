@@ -1,0 +1,41 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": 700,
+  "height": 500,
+  "data": {
+    "url": "https://raw.githubusercontent.com/koijag/FIT3179-VIS-2/main/STE_2021_AUST_GDA94.json",
+    "format": {
+      "type": "topojson",
+      "feature": "STE_2021_AUST_GDA94"
+    }
+  },
+  "transform": [
+    {
+      "lookup": "properties.STE_NAME21", 
+      "from": {
+        "data": {
+          "url": "https://raw.githubusercontent.com/koijag/FIT3179-VIS-2/main/Final_Manually_Cleaned_Water_Use_Data.csv"
+        },
+        "key": "Region",
+        "fields": ["Distributed_Water_GL"]
+      }
+    }
+  ],
+  "projection": {
+    "type": "mercator"
+  },
+  "mark": "geoshape",
+  "encoding": {
+    "color": {
+      "field": "Distributed_Water_GL",
+      "type": "quantitative",
+      "scale": {
+        "scheme": "blues"
+      }
+    },
+    "tooltip": [
+      {"field": "properties.STE_NAME21", "type": "nominal", "title": "State"},
+      {"field": "Distributed_Water_GL", "type": "quantitative", "title": "Water Supply (GL)"}
+    ]
+  }
+}
