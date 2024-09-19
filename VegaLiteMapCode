@@ -1,5 +1,11 @@
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": {
+    "text": "Water Distribution Across Australian States (2021-22)",
+    "fontSize": 20,
+    "anchor": "start",
+    "fontWeight": "bold"
+  },
   "width": 700,
   "height": 500,
   "data": {
@@ -11,7 +17,7 @@
   },
   "transform": [
     {
-      "lookup": "properties.STE_NAME21", 
+      "lookup": "properties.STE_NAME21",
       "from": {
         "data": {
           "url": "https://raw.githubusercontent.com/koijag/FIT3179-VIS-2/main/Final_Manually_Cleaned_Water_Use_Data.csv"
