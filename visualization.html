@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/vega@5.30.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.20.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.26.0"></script>
+</head>
+<body>
+  <div id="vis"/>
+  <script>
+    const spec = {
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": {
+    "text": "Water Distribution Across Australian States (2021-22)",
+    "fontSize": 20,
+    "anchor": "start",
+    "fontWeight": "bold"
+  },
+  "width": 700,
+  "height": 500,
+  "data": {
+    "url": "https://raw.githubusercontent.com/koijag/FIT3179-VIS-2/main/STE_2021_AUST_GDA94.json",
+    "format": {"type": "topojson", "feature": "STE_2021_AUST_GDA94"}
+  },
+  "transform": [
+    {
+      "lookup": "properties.STE_NAME21",
+      "from": {
+        "data": {
+          "url": "https://raw.githubusercontent.com/koijag/FIT3179-VIS-2/main/Final_Manually_Cleaned_Water_Use_Data.csv"
+        },
+        "key": "Region",
+        "fields": ["Distributed_Water_GL"]
+      }
+    }
+  ],
+  "projection": {"type": "mercator"},
+  "mark": "geoshape",
+  "encoding": {
+    "color": {
+      "field": "Distributed_Water_GL",
+      "type": "quantitative",
+      "scale": {"scheme": "blues"}
+    },
+    "tooltip": [
+      {"field": "properties.STE_NAME21", "type": "nominal", "title": "State"},
+      {
+        "field": "Distributed_Water_GL",
+        "type": "quantitative",
+        "title": "Water Supply (GL)"
+      }
+    ]
+  },
+  "config": {}
+};
+    vegaEmbed("#vis", spec, {mode: "vega-lite"}).then(console.log).catch(console.warn);
+  </script>
+</body>
+</html>
