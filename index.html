@@ -1,59 +1,427 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <script src="https://cdn.jsdelivr.net/npm/vega@5.30.0"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.20.1"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.26.0"></script>
-</head>
-<body>
-  <div id="vis"/>
-  <script>
-    const spec = {
-  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "title": {
-    "text": "Water Distribution Across Australian States (2021-22)",
-    "fontSize": 20,
-    "anchor": "start",
-    "fontWeight": "bold"
-  },
-  "width": 700,
-  "height": 500,
-  "data": {
-    "url": "https://raw.githubusercontent.com/koijag/FIT3179-VIS-2/main/STE_2021_AUST_GDA94.json",
-    "format": {"type": "topojson", "feature": "STE_2021_AUST_GDA94"}
-  },
-  "transform": [
-    {
-      "lookup": "properties.STE_NAME21",
-      "from": {
+  <head>
+    <title>Multiple Visualisations | Improved Layout</title>
+    <script src="https://cdn.jsdelivr.net/npm/vega@5.30.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.20.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.26.0"></script>
+    <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.3/build/pure-min.css"
+      integrity="sha384-cg6SkqEOCV1NbJoCu11+bm0NvBRc8IYLRGXkmNrqUBfTjmMYwNKPWBTIKyw9mHNJ" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+        color: #333;
+      }
+  
+      .page {
+        max-width: 1400px;
+        margin: 40px auto;
+        padding: 20px;
+        background: #ffffff;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+      }
+  
+      h1 {
+        text-align: center;
+        font-size: 2em;
+        margin-bottom: 20px;
+      }
+  
+      .vis-container {
+        margin: 20px;
+        padding: 15px;
+        background: #fafafa;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+  
+      .text-below-butterfly {
+        text-align: right;
+        margin: 50px;
+        font-size: 1.11em;
+        line-height: 1.5;
+      }
+
+      .grid-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 40px;
+        gap: 1px;
+      }
+  
+      .grid-half {
+        flex: 0 0 48%;
+      }
+  
+      .center-map {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 40px;
+      }
+  
+      .annotation-text {
+        text-align: center;
+        margin-top: 15px;
+        font-size: 1em;
+        color: #888;
+        font-style: italic;
+      }
+  
+      img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        object-fit: scale-down;
+      }
+    </style>
+  </head>
+  
+  <body>
+  
+    <div class="page">
+  
+      <h1>Visualisations of Distributed Water Use</h1>
+      <p class="text-between">This page displays four visualisations: a bar chart, a butterfly bar chart, a scatter plot,
+        and a map representing the distribution of water use in Australia.</p>
+  
+      <!-- First row with bar chart and butterfly chart -->
+      <div class="grid-row">
+        <div class="grid-half">
+          <div id="vis1" class="vis-container"></div>
+        </div>
+        <div class="grid-half">
+          <div id="vis2" class="vis-container"></div>
+          <p class="text-below-butterfly">Distributed water use is driven by demand from the Agriculture industry and
+            includes water from irrigation suppliers and paid river water allocations. In 2021-22, the Agriculture,
+            forestry and fishing industry accounted for 61% of all distributed water used. Distributed water use for this
+            industry increased by 8% in 2021-22, to 7,336 GL.
+          </p>
+        </div>
+      </div>
+  
+      <!-- Second row with scatter plot and image -->
+      <div class="grid-row">
+        <div class="grid-half">
+          <div id="vis4" class="vis-container"></div>
+        </div>
+        <div class="grid-half">
+          <div class="vis-container">
+            <img
+              src="https://static.ffx.io/images/$zoom_0.099%2C$multiply_1.3545%2C$ratio_1.5%2C$width_756%2C$x_0%2C$y_0/t_crop_custom/q_86%2Cf_auto/f42dc563dd631b6109a35858bb3afc4a7c1eb281"
+              alt="Descriptive Image" />
+          </div>
+        </div>
+      </div>
+  
+      <!-- Map visualization and dropdown -->
+      <div class="center-map">
+        <div id="vis3" class="vis-container"></div>
+        <p class="annotation-text">Note: Data shows water supply across the entire state, accuracy may vary.</p>
+        <div id="year-selection" class="left-aligned-selection"></div>
+      </div>
+  
+    </div> <!-- end page -->
+    <script type="text/javascript">
+      // Bar chart visualisation
+      const specVis1 = {
+        "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
         "data": {
-          "url": "https://raw.githubusercontent.com/koijag/FIT3179-VIS-2/main/Final_Manually_Cleaned_Water_Use_Data.csv"
+          "url": "https://raw.githubusercontent.com/koijag/Week-9-repo/main/2.3%20Distributed%20water%20use%20by%20selected%20industries(a)%20and%20households%2C%20Australia.csv"
         },
-        "key": "Region",
-        "fields": ["Distributed_Water_GL"]
-      }
-    }
-  ],
-  "projection": {"type": "mercator"},
-  "mark": "geoshape",
-  "encoding": {
-    "color": {
-      "field": "Distributed_Water_GL",
-      "type": "quantitative",
-      "scale": {"scheme": "blues"}
+        "transform": [
+          {
+            "fold": [
+              "Agriculture, forestry and fishing (GL)",
+              "Households (GL)",
+              "Manufacturing (GL)",
+              "Mining (GL)",
+              "Other industries (a) (GL)"
+            ],
+            "as": ["Sector", "Water use (GL)"]
+          }
+        ],
+        "mark": "bar",
+        "width": 450,
+        "height": 300,
+        "encoding": {
+          "x": { "field": "Year", "type": "ordinal", "title": "Year" },
+          "y": {
+            "field": "Water use (GL)",
+            "type": "quantitative",
+            "title": "Water use (GL)"
+          },
+          "color": {
+            "field": "Sector",
+            "type": "nominal",
+            "title": "Sector",
+            "scale": { "scheme": "blues" }
+          },
+          "tooltip": [
+            { "field": "Year", "type": "ordinal", "title": "Year" },
+            { "field": "Sector", "type": "nominal", "title": "Sector" },
+            { "field": "Water use (GL)", "type": "quantitative", "title": "Water Use (GL)" }
+          ]
+        },
+        "title": {
+          "text": "Distributed Water Use",
+          "fontSize": 20,
+          "anchor": "start",
+          "fontWeight": "bold"
+        }
+      };
+      vegaEmbed("#vis1", specVis1, { mode: "vega-lite" }).then(console.log).catch(console.warn);
+  
+    // Butterfly chart visualisation
+    const specVis2 = {
+      "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+      "description": "A butterfly bar chart showing expenditure and physical use of distributed water in Australia.",
+      "data": {
+        "values": [
+          { "Category": "Industries", "Type": "Expenditure", "Value": 3.16 },
+          { "Category": "Industries", "Type": "Physical Use", "Value": 10.2 },
+          { "Category": "Households", "Type": "Expenditure", "Value": 6.09 },
+          { "Category": "Households", "Type": "Physical Use", "Value": 1.8 }
+        ]
+               },
+      "spacing": 40,
+      "hconcat": [
+        {
+          "transform": [{ "filter": "datum.Type == 'Expenditure'" }],
+          "title": {
+            "text": "Expenditure",
+            "fontSize": 16,
+            "anchor": "start",
+            "fontWeight": "bold"
+          },
+          "mark": { "type": "bar", "color": "#1f77b4" },
+          "encoding": {
+            "y": {
+              "field": "Category",
+              "type": "ordinal",
+              "axis": null,
+              "sort": "descending"
+            },
+            "x": {
+              "field": "Value",
+              "type": "quantitative",
+              "title": "Expenditure ($ billions)",
+              "axis": {"format": "s"},
+              "scale": { "domain": [0, 7], "reverse": true }
+            },
+            "tooltip": [
+              { "field": "Category", "type": "nominal", "title": "Category" },
+              { "field": "Value", "type": "quantitative", "title": "Expenditure ($ billions)" }
+            ]
+          }
+        },
+        {
+          "width": 20,
+          "view": { "stroke": null },
+          "mark": { "type": "text", "align": "center" },
+          "encoding": {
+            "y": {
+              "field": "Category",
+              "type": "ordinal",
+              "axis": null,
+              "sort": "descending"
+            },
+            "text": { "field": "Category", "type": "ordinal" }
+          }
+        },
+        {
+          "transform": [{ "filter": "datum.Type == 'Physical Use'" }],
+          "title": {
+            "text": "Physical Use",
+            "fontSize": 16,
+            "anchor": "start",
+            "fontWeight": "bold"
+          },
+          "mark": { "type": "bar", "color": "#4fa3d9" },
+          "encoding": {
+            "y": {
+              "field": "Category",
+              "type": "ordinal",
+              "axis": null,
+              "sort": "descending"
+            },
+            "x": {
+              "field": "Value",
+              "type": "quantitative",
+              "title": "Physical Use (GL)",
+              "axis": { "format": "s" },
+              "scale": { "domain": [0, 10] }
+            },
+            "tooltip": [
+              { "field": "Category", "type": "nominal", "title": "Category" },
+              { "field": "Value", "type": "quantitative", "title": "Physical Use (GL)" }
+            ]
+          }
+        }
+      ],
+      "config": { "view": { "stroke": null }, "axis": { "grid": false } }
+    };
+    vegaEmbed("#vis2", specVis2, { mode: "vega-lite" }).then(console.log).catch(console.warn);
+
+    // Map visualisation
+    const specVis3 = {
+    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "data": {
+      "url": "https://raw.githubusercontent.com/koijag/FIT3179-VIS-2/main/STE_2021_AUST_GDA94.json",
+      "format": {"type": "topojson", "feature": "STE_2021_AUST_GDA94"}
     },
-    "tooltip": [
-      {"field": "properties.STE_NAME21", "type": "nominal", "title": "State"},
+    "transform": [
       {
-        "field": "Distributed_Water_GL",
-        "type": "quantitative",
-        "title": "Water Supply (GL)"
+        "lookup": "properties.STE_NAME21",
+        "from": {
+          "data": {
+            "url": "https://raw.githubusercontent.com/koijag/Week-9-repo/refs/heads/main/table_12_3.csv"
+          },
+          "key": "Region",
+          "fields": [
+            "2014-15", "2015-16", "2016-17", "2017-18", "2018-19", "2019-20", "2020-21", "2021-22"
+          ]
+        }
+      },
+      {
+        "fold": ["2014-15", "2015-16", "2016-17", "2017-18", "2018-19", "2019-20", "2020-21", "2021-22"],
+        "as": ["Year", "Water_Usage"]
+      },
+      {
+        "filter": "datum['Water_Usage'] != null"
+      },
+      {
+        "filter": "datum.Year == year_selection" // Filter the data based on the selected year
       }
-    ]
-  },
-  "config": {}
-};
-    vegaEmbed("#vis", spec, {mode: "vega-lite"}).then(console.log).catch(console.warn);
-  </script>
+    ],
+    "projection": {"type": "mercator"},
+    "mark": "geoshape",
+    "encoding": {
+      "color": {
+        "field": "Water_Usage",
+        "type": "quantitative",
+        "scale": {"scheme": "blues"},
+        "title": "Water Usage (GL)"
+      },
+      "tooltip": [
+        {"field": "properties.STE_NAME21", "type": "nominal", "title": "State"},
+        {"field": "Year", "type": "ordinal", "title": "Year"},
+        {"field": "Water_Usage", "type": "quantitative", "title": "Water Supply (GL)"}
+      ]
+    },
+    "width": 700,
+    "height": 500,
+    "title": {
+      "text": "Water Distribution Across Australian States (2021-22)",
+      "fontSize": 20,
+      "anchor": "start",
+      "fontWeight": "bold"
+    },
+    "params": [
+      {
+        "name": "year_selection",
+        "value": "2021-22",
+        "bind": {
+          "element": "#year-selection",  // Bind the selection menu to the specific div element
+          "input": "select",
+          "options": ["2014-15", "2015-16", "2016-17", "2017-18", "2018-19", "2019-20", "2020-21", "2021-22"],
+          "name": "Select Year: "
+        }
+      }
+    ],
+    "config": {}
+  };
+    vegaEmbed("#vis3", specVis3, {mode: "vega-lite"}).then(console.log).catch(console.warn);
+    // Scatter plot visualisation (new visualization)
+    const specVis4 = {
+      "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+      "description": "Scatter plot showing monthly rainfall data from 2014 to 2022 with an aesthetically enhanced rolling average line and a single annotation.",
+      "width": 550,
+      "height": 350,
+      "data": {
+        "url": "https://raw.githubusercontent.com/koijag/Week-9-repo/refs/heads/main/monthly_rainfall_data.csv"
+      },
+      "transform": [
+        {
+          "window": [{ "field": "Rainfall_mm", "op": "mean", "as": "rolling_mean" }],
+          "frame": [-5, 5]
+        }
+      ],
+      "encoding": {
+        "x": {
+          "field": "Date",
+          "type": "temporal",
+          "title": "Date",
+          "axis": { "format": "%Y", "labelAngle": -45, "grid": false }
+        },
+        "y": {
+          "type": "quantitative",
+          "axis": { "title": "Rainfall (mm)", "grid": true, "gridOpacity": 0.3 }
+        }
+      },
+      "layer": [
+        {
+          "mark": { "type": "point", "size": 50, "opacity": 0.5, "color": "#2b7cb6" },
+          "encoding": {
+            "y": { "field": "Rainfall_mm", "title": "Monthly Rainfall" },
+            "tooltip": [
+              {
+                "field": "Date",
+                "type": "temporal",
+                "title": "Date",
+                "format": "%B %Y"
+              },
+              {
+                "field": "Rainfall_mm",
+                "type": "quantitative",
+                "title": "Rainfall (mm)",
+                "format": ".2f"
+              }
+            ]
+          }
+        },
+        {
+          "mark": {
+            "type": "line",
+            "color": "#507e9c",
+            "size": 3,
+            "strokeDash": [5, 5]
+          },
+          "encoding": {
+            "y": { "field": "rolling_mean", "title": "Rolling Mean of Rainfall" }
+          }
+        },
+        {
+          "mark": {
+            "type": "text",
+            "align": "left",
+            "dx": 10,
+            "dy": -10,
+            "fontSize": 12,
+            "color": "#497796"
+          },
+          "encoding": {
+            "x": { "datum": "2017-01-01" },
+            "y": { "datum": 350 },
+            "text": { "value": "Rolling Mean of Rainfall" }
+          }
+        }
+      ],
+      "config": {
+        "background": "white",
+        "axis": { "labelFontSize": 12, "titleFontSize": 14 },
+        "legend": { "titleFontSize": 13, "labelFontSize": 12 }
+      }
+    };
+    vegaEmbed("#vis4", specVis4, { mode: "vega-lite" }).then(console.log).catch(console.warn);
+ 
+ </script>
 </body>
+
 </html>
